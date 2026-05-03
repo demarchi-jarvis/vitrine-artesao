@@ -134,7 +134,7 @@ public class ProdutoController {
         return ResponseEntity.ok(meusProdutos);
     }
     @GetMapping("/loja")
-    public ResponseEntity<List<Produto>> getProdutosUsuario(String email) {
+    public ResponseEntity<List<Produto>> getProdutosUsuario(@RequestParam String email) {
         List<Produto> meusProdutos = produtoService.buscarProdutosUsuario(email);
         return ResponseEntity.ok(meusProdutos);
     }
@@ -142,23 +142,20 @@ public class ProdutoController {
     // PUT http://localhost:8081/api/produtos/{id}
     @PatchMapping("/{id}")
     public ResponseEntity<Produto> updateProduto(
-        @PathVariable UUID id, 
+        @PathVariable UUID id,
         @RequestBody Produto produto) {
-        
+
         Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        produto.setAutor(usuarioLogado); // Assumindo que o getId() retorna um tipo que pode ser convertido para String.
-
-        if (produto.getAutor() == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        try {
-            Produto produtoAtualizado = produtoService.updateProduto(id, produto, produto.getAutor());
-            return new ResponseEntity<>(produtoAtualizado, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            System.err.println("Erro ao atualizar produto: " + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return produtoService.getProdutoById(id)
+                .map(existente -> {
+                    if (existente.getAutor() == null || !existente.getAutor().getId().equals(usuarioLogado.getId())) {
+                        return new ResponseEntity<Produto>(HttpStatus.FORBIDDEN);
+                    }
+                    Produto atualizado = produtoService.updateProduto(id, produto, usuarioLogado);
+                    return new ResponseEntity<>(atualizado, HttpStatus.OK);
+                })
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/{id}")

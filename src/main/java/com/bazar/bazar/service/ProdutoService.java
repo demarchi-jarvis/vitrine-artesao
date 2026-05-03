@@ -92,7 +92,6 @@ public class ProdutoService {
                     produtoExistente.setDescricao(produtoDetails.getDescricao());
                     produtoExistente.setQuantidade(produtoDetails.getQuantidade());
                     produtoExistente.setCategoria(produtoDetails.getCategoria());
-                    produtoExistente.setCategoria(produtoDetails.getCategoria());
                     produtoExistente.setImagem(produtoDetails.getImagem());
                     produtoExistente.setIcone(produtoDetails.getIcone());
                     produtoExistente.setAutor(autor); 
@@ -107,9 +106,6 @@ public class ProdutoService {
         return produtoRepository.findById(id)
                 .map(produto -> {
                     produto.setIcone(icone);
-                    if (icone == null || icone.isBlank()) {
-                        produto.setCategoria(null); // resetar categoria se não tiver ícone
-                    }
                     return produtoRepository.save(produto);
                 })
                 .orElseThrow(() -> new NoSuchElementException("Produto não encontrado com ID: " + id));

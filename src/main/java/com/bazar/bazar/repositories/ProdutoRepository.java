@@ -37,6 +37,6 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
     @Modifying
     @Transactional
     @Query("UPDATE Produto p SET p.icone = :iconeUrl WHERE p.id = :id")
-    void updateIconeUrlById(@Param("id") Long id, @Param("iconeUrl") String iconeUrl);
+    void updateIconeUrlById(@Param("id") UUID id, @Param("iconeUrl") String iconeUrl);
 
 }

@@ -75,7 +75,6 @@ public class UsuarioController {
     @PatchMapping("/alterar")
     public ResponseEntity<UsuarioDTO> updateUsuario(@RequestBody UsuarioUpdateRequest usuarioDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(usuarioDTO.getNome());
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.status(401).build();
         }
@@ -133,7 +132,7 @@ public class UsuarioController {
         return ResponseEntity.status(404).build();
     }
     @GetMapping("perfis")
-    public ResponseEntity<PaginaResponse<UsuarioDTO>> getAllUsuarios(String nome,
+    public ResponseEntity<PaginaResponse<UsuarioDTO>> getAllUsuarios(@RequestParam(required = false) String nome,
         @PageableDefault(page = 0, size = 12, sort = "nome") Pageable pageable) {
         Page<UsuarioDTO> usuariosPage = usuarioService.buscarUsuarioPorNome(nome, pageable);
         
@@ -148,7 +147,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/dono")
-    public ResponseEntity<Usuario> getDonoLoja(String email) {
+    public ResponseEntity<Usuario> getDonoLoja(@RequestParam String email) {
         Usuario usuarioDonoLoja = usuarioService.buscarDonoLoja(email);
         return ResponseEntity.ok(usuarioDonoLoja);
     }

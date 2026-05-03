@@ -69,7 +69,7 @@ public class EnderecoController {
         }
     }
     @GetMapping("/email")
-    public ResponseEntity<Endereco> getEnderecoPorEmail(String email) {
+    public ResponseEntity<Endereco> getEnderecoPorEmail(@RequestParam String email) {
 
         Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UUID usuarioId = usuarioLogado.getId();
@@ -97,7 +97,6 @@ public class EnderecoController {
                     endereco.setAdicional(enderecoAtualizado.getAdicional());
                     endereco.setBairro(enderecoAtualizado.getBairro());
                     endereco.setComplemento(enderecoAtualizado.getComplemento());
-                    endereco.setUsuario(enderecoAtualizado.getUsuario());
                     
                     Endereco salvo = enderecoService.salvar(endereco,usuarioLogado);
                     return new ResponseEntity<>(salvo, HttpStatus.OK);

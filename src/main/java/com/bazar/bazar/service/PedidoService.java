@@ -65,7 +65,7 @@ public class PedidoService {
         Pedido novoPedido = new Pedido(cliente, vendedor);
         novoPedido.setEnderecoEntrega(enderecoEntrega);
         novoPedido.setDataCriacao(LocalDateTime.now());
-        novoPedido.setDataEntrega(LocalDateTime.now());
+        novoPedido.setDataEntrega(pedidoRequest.getDataEntrega() != null ? pedidoRequest.getDataEntrega() : LocalDateTime.now());
         novoPedido.setRemote(pedidoRequest.getRemote());
 
         if (pedidoRequest.getItens() != null && !pedidoRequest.getItens().isEmpty()) {
@@ -80,6 +80,9 @@ public class PedidoService {
                 if (produto.getQuantidade() < itemRequest.getQuantidade()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estoque insuficiente para o produto: " + produto.getNome());
                 }
+
+                produto.setQuantidade(produto.getQuantidade() - itemRequest.getQuantidade());
+                produtoRepository.save(produto);
 
                 ItemPedido itemPedido = new ItemPedido(novoPedido, produto, itemRequest.getQuantidade(), produto.getAutor(), usuarioLogado);
                 novoPedido.addItem(itemPedido);

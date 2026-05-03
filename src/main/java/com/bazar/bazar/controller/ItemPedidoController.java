@@ -33,7 +33,6 @@ public class ItemPedidoController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        size=3;
         PaginaResponse<ItemPedidoDTO> itens = itemPedidoService.buscarItensPorCompradorLogado(page, size);
         return ResponseEntity.ok(itens);
     }
@@ -42,7 +41,6 @@ public class ItemPedidoController {
     public ResponseEntity<PaginaResponse<ItemPedidoDTO>> getItensPorVendedorLogado(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        size=3;
         PaginaResponse<ItemPedidoDTO> itens = itemPedidoService.buscarItensPorVendedorLogado(page, size);
         return ResponseEntity.ok(itens);
     }

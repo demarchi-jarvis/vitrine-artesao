@@ -36,8 +36,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/autenticacao/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/autenticacao/registrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/produtos/filtro/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/produtos/filtro").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/produtos/filtro/").permitAll()
 
                         .anyRequest().authenticated()
                 )

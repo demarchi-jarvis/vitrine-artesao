@@ -24,7 +24,7 @@ import java.util.UUID;
 public class Produto {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     public UUID id;
     private String nome;
     private double preco;

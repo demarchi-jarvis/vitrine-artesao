@@ -26,7 +26,7 @@ public class AutenticacaoController {
         Optional<ResponseDTO> responseDTO = this.usuarioService.fazerLogin(body);
 
         return responseDTO.map(ResponseEntity::ok)
-                          .orElseGet(() -> ResponseEntity.badRequest().build());
+                          .orElseGet(() -> ResponseEntity.status(401).build());
     }
 
     @PostMapping("/registrar")
@@ -34,6 +34,6 @@ public class AutenticacaoController {
         Optional<ResponseDTO> responseDTO = this.usuarioService.registrarUsuario(body);
 
         return responseDTO.map(ResponseEntity::ok)
-                          .orElseGet(() -> ResponseEntity.badRequest().build());
+                          .orElseGet(() -> ResponseEntity.status(409).build());
     }
 }

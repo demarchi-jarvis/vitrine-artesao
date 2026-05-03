@@ -148,10 +148,7 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
     public Page<UsuarioDTO> buscarUsuarioPorNome(String nome, Pageable pageable) {
-        System.out.println("Buscando usuários com nome contendo: " + nome);
-        
         if(nome== null || nome.isBlank()) {
-            System.out.println("Nome está vazio ou nulo, retornando todos os usuários.");
             Page<Usuario> usuarios = usuarioRepository.findByLojaTrue(pageable);
             return usuarios.map(usuario -> new UsuarioDTO(
                 usuario.getId(),
