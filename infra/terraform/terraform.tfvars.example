@@ -1,0 +1,21 @@
+# Copie para terraform.tfvars e preencha os valores reais
+# cp terraform.tfvars.example terraform.tfvars
+
+# Região AWS (Academy sempre us-east-1)
+aws_region = "us-east-1"
+
+# Chave EC2 (Academy usa "vockey" — baixe vockey.pem no painel do Lab)
+key_name = "vockey"
+
+# Tipo de instância
+instance_type = "t3.small"
+
+# Credenciais do banco — use senhas fortes em produção
+db_username = "bazar_user"
+db_password = "TROQUE_POR_SENHA_FORTE"
+
+# Segredo JWT — mínimo 32 caracteres aleatórios
+jwt_secret = "TROQUE_POR_SEGREDO_ALEATORIO_MINIMO_32_CHARS"
+
+# URL do frontend (deixe vazio por enquanto)
+frontend_url = ""
