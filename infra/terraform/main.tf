@@ -8,8 +8,23 @@ terraform {
   }
 }
 
+# AWS Academy usa credenciais temporárias (com session token).
+# Configure via variáveis de ambiente ANTES de rodar terraform apply:
+#
+#   export AWS_ACCESS_KEY_ID="..."
+#   export AWS_SECRET_ACCESS_KEY="..."
+#   export AWS_SESSION_TOKEN="..."         ← obrigatório no Academy
+#   export AWS_DEFAULT_REGION="us-east-1"
+#
+# Ou coloque em ~/.aws/credentials com profile [default].
+# O provider pega AWS_SESSION_TOKEN automaticamente se estiver na env.
 provider "aws" {
   region = var.aws_region
+
+  # Necessário no AWS Academy: evita chamadas IAM que a sandbox bloqueia
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_metadata_api_check     = true
 }
 
 data "aws_vpc" "default" {
@@ -46,7 +61,7 @@ resource "aws_security_group" "vitrine" {
   }
 
   ingress {
-    description = "Frontend dev server"
+    description = "Frontend React / Angular"
     from_port   = 3000
     to_port     = 3000
     protocol    = "tcp"

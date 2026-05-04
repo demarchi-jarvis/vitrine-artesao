@@ -1,21 +1,32 @@
-# Copie para terraform.tfvars e preencha os valores reais
-# cp terraform.tfvars.example terraform.tfvars
+# ===========================================================================
+#  Vitrine Virtual — Terraform vars para AWS Academy
+# ===========================================================================
+#  Passo a passo:
+#  1. cp terraform.tfvars.example terraform.tfvars
+#  2. Preencha db_password e jwt_secret com valores reais
+#  3. No terminal, cole as credenciais do Lab (AWS Academy > AWS Details > CLI):
+#       export AWS_ACCESS_KEY_ID="..."
+#       export AWS_SECRET_ACCESS_KEY="..."
+#       export AWS_SESSION_TOKEN="..."
+#  4. terraform init && terraform apply
+# ===========================================================================
 
-# Região AWS (Academy sempre us-east-1)
+# Região AWS — Academy sempre us-east-1
 aws_region = "us-east-1"
 
-# Chave EC2 (Academy usa "vockey" — baixe vockey.pem no painel do Lab)
+# Chave SSH — Academy usa "vockey"
+# Baixe o arquivo .pem em: AWS Academy Lab > Download PEM
 key_name = "vockey"
 
 # Tipo de instância
 instance_type = "t3.small"
 
-# Credenciais do banco — use senhas fortes em produção
+# Banco de dados
 db_username = "bazar_user"
-db_password = "TROQUE_POR_SENHA_FORTE"
+db_password = "TROQUE_POR_SENHA_FORTE_12chars+"
 
-# Segredo JWT — mínimo 32 caracteres aleatórios
-jwt_secret = "TROQUE_POR_SEGREDO_ALEATORIO_MINIMO_32_CHARS"
+# JWT — gere com: openssl rand -hex 32
+jwt_secret = "TROQUE_openssl_rand_hex_32_resultado_aqui"
 
-# URL do frontend (deixe vazio por enquanto)
+# URL do frontend (deixe vazio por enquanto — preencha após implantar o React/Angular)
 frontend_url = ""

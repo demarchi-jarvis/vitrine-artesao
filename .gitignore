@@ -35,7 +35,15 @@ build/
 ### Secrets — NUNCA commitar
 .env
 *.env.local
+infra/terraform/*.tfvars
+!infra/terraform/*.tfvars.example
 
 ### Logs
 *.log
 logs/
+
+### Terraform state — NUNCA commitar
+*.tfstate
+*.tfstate.backup
+infra/terraform/.terraform/
+infra/terraform/.terraform.lock.hcl

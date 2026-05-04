@@ -84,20 +84,25 @@ public class PedidoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Endpoint para adicionar um item a um pedido existente
-    // POST http://localhost:8081/api/pedidos/{pedidoId}/items
     @PostMapping("/{pedidoId}/items")
-    public ResponseEntity<PedidoResponse> addItemToPedido(@PathVariable UUID pedidoId, @RequestBody ItemPedidoRequest itemRequest) {
-        // CORREÇÃO: O tipo do path variable `pedidoId` foi alterado para UUID para consistência.
-        Pedido pedidoAtualizado = pedidoService.addItemToPedido(pedidoId, itemRequest);
-        return new ResponseEntity<>(new PedidoResponse(pedidoAtualizado), HttpStatus.OK);
+    public ResponseEntity<PedidoResponse> addItemToPedido(@PathVariable UUID pedidoId,
+                                                          @RequestBody ItemPedidoRequest itemRequest,
+                                                          @AuthenticationPrincipal Usuario usuarioLogado) {
+        Pedido pedido = pedidoService.buscarPedidoPorId(pedidoId);
+        boolean isOwner = pedido.getCliente().getId().equals(usuarioLogado.getId())
+                || pedido.getVendedor().getId().equals(usuarioLogado.getId());
+        if (!isOwner) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        return new ResponseEntity<>(new PedidoResponse(pedidoService.addItemToPedido(pedidoId, itemRequest)), HttpStatus.OK);
     }
 
-    // Endpoint para remover um item de um pedido existente
-    // DELETE http://localhost:8081/api/pedidos/{pedidoId}/items/{itemId}
     @DeleteMapping("/{pedidoId}/items/{itemId}")
-    public ResponseEntity<PedidoResponse> removeItemFromPedido(@PathVariable UUID pedidoId, @PathVariable UUID itemId) {
-        Pedido pedidoAtualizado = pedidoService.removeItemFromPedido(pedidoId, itemId);
-        return new ResponseEntity<>(new PedidoResponse(pedidoAtualizado), HttpStatus.OK);
+    public ResponseEntity<PedidoResponse> removeItemFromPedido(@PathVariable UUID pedidoId,
+                                                               @PathVariable UUID itemId,
+                                                               @AuthenticationPrincipal Usuario usuarioLogado) {
+        Pedido pedido = pedidoService.buscarPedidoPorId(pedidoId);
+        boolean isOwner = pedido.getCliente().getId().equals(usuarioLogado.getId())
+                || pedido.getVendedor().getId().equals(usuarioLogado.getId());
+        if (!isOwner) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        return new ResponseEntity<>(new PedidoResponse(pedidoService.removeItemFromPedido(pedidoId, itemId)), HttpStatus.OK);
     }
 }
