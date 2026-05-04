@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: vitrine-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bazar
+      POSTGRES_USER: ${DB_USERNAME:-bazar_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-bazar_user} -d bazar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - vitrine-net
+
+  app:
+    build: .
+    container_name: vitrine-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/bazar
+      DB_USERNAME: ${DB_USERNAME:-bazar_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - vitrine-net
+
+volumes:
+  postgres_data:
+
+networks:
+  vitrine-net:
+    driver: bridge

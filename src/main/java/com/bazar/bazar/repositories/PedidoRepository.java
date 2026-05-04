@@ -12,4 +12,5 @@ import java.util.UUID;
 
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, UUID> {
+    List<Pedido> findByClienteIdOrVendedorId(UUID clienteId, UUID vendedorId);
 }

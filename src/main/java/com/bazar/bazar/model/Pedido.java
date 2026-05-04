@@ -23,11 +23,11 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY) 
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cliente_id", nullable = false)
-    private Usuario cliente; 
-    
-    @ManyToOne(fetch = FetchType.LAZY)
+    private Usuario cliente;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "vendedor_id", nullable = false)
     private Usuario vendedor;
 
@@ -39,8 +39,8 @@ public class Pedido {
     private LocalDateTime dataCriacao;
     private LocalDateTime dataEntrega;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemPedido> itens = new ArrayList<>(); 
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<ItemPedido> itens = new ArrayList<>();
 
     public void addItem(ItemPedido item) {
         itens.add(item);

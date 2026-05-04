@@ -76,6 +76,7 @@ public class UsuarioService {
         return Optional.empty();
     }
 
+    @Transactional
     public Usuario atualizarUsuario(UUID id, UsuarioUpdateRequest usuarioDTO) {
         // Encontra o usuário por UUID, lançando uma exceção se não for encontrado.
         Usuario usuario = usuarioRepository.findById(id)

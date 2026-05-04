@@ -10,8 +10,8 @@ Permite que artesãos cadastrem lojas, produtos e recebam pedidos. Compradores n
 
 | Camada | Tecnologia |
 |---|---|
-| Framework | Spring Boot 4.0.0-SNAPSHOT |
-| Linguagem | Java 24 |
+| Framework | Spring Boot 3.4.1 |
+| Linguagem | Java 21 (LTS) |
 | Banco | PostgreSQL |
 | ORM | Spring Data JPA / Hibernate |
 | Segurança | Spring Security + JWT (Auth0) |

@@ -91,10 +91,6 @@ public class PedidoService {
         return pedidoRepository.save(novoPedido);
     }
     
-    public List<Pedido> listarTodosPedidos() {
-        return pedidoRepository.findAll();
-    }
-
     public Pedido buscarPedidoPorId(UUID id) {
         return pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado com ID: " + id));
@@ -105,30 +101,38 @@ public class PedidoService {
     @Transactional
     public Pedido atualizarPedido(UUID id, PedidoRequest pedidoRequest) {
         Pedido pedidoExistente = buscarPedidoPorId(id);
-        Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario usuarioLogado = usuarioRepository.findById(usuario.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado com ID: " + usuario.getId()));
-        if (usuarioLogado.getId() != null && !pedidoExistente.getCliente().getId().equals(usuarioLogado.getId())) {
-            Usuario novoCliente = usuarioRepository.findById(usuarioLogado.getId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Novo cliente não encontrado com ID: " + usuarioLogado.getId()));
-            pedidoExistente.setCliente(novoCliente);
-        }
-        
+        // Bug C fix: vendedor pode ser trocado via request, cliente NÃO muda
         if (pedidoRequest.getVendedorId() != null && !pedidoExistente.getVendedor().getId().equals(pedidoRequest.getVendedorId())) {
             Usuario novoVendedor = usuarioRepository.findById(pedidoRequest.getVendedorId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Novo vendedor não encontrado com ID: " + pedidoRequest.getVendedorId()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vendedor não encontrado com ID: " + pedidoRequest.getVendedorId()));
             pedidoExistente.setVendedor(novoVendedor);
         }
 
         pedidoExistente.setRemote(pedidoRequest.getRemote());
 
         if (pedidoRequest.getItens() != null) {
+            // Bug B fix: devolver estoque dos itens removidos antes de limpar
+            for (ItemPedido item : pedidoExistente.getItens()) {
+                Produto p = item.getProduto();
+                p.setQuantidade(p.getQuantidade() + item.getQuantidade());
+                produtoRepository.save(p);
+            }
             pedidoExistente.getItens().clear();
 
             for (ItemPedidoRequest itemRequest : pedidoRequest.getItens()) {
                 Produto produto = produtoRepository.findById(itemRequest.getProdutoId())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado com ID: " + itemRequest.getProdutoId()));
+
+                if (itemRequest.getQuantidade() <= 0) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A quantidade do item deve ser positiva.");
+                }
+                if (produto.getQuantidade() < itemRequest.getQuantidade()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estoque insuficiente para o produto: " + produto.getNome());
+                }
+                produto.setQuantidade(produto.getQuantidade() - itemRequest.getQuantidade());
+                produtoRepository.save(produto);
 
                 ItemPedido novoItem = new ItemPedido(pedidoExistente, produto, itemRequest.getQuantidade(), produto.getAutor(), usuarioLogado);
                 pedidoExistente.addItem(novoItem);
@@ -161,13 +165,15 @@ public class PedidoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estoque insuficiente para o produto: " + produto.getNome());
         }
 
+        produto.setQuantidade(produto.getQuantidade() - itemRequest.getQuantidade());
+        produtoRepository.saveAndFlush(produto);
+
         ItemPedido newItem = new ItemPedido(pedido, produto, itemRequest.getQuantidade(), produto.getAutor(), usuarioLogado);
         pedido.addItem(newItem);
 
         return pedidoRepository.save(pedido);
     }
     
-    // CORREÇÃO: Adicionando o método para remover item, que estava faltando no seu PedidoService.
     @Transactional
     public Pedido removeItemFromPedido(UUID pedidoId, UUID itemId) {
         Pedido pedido = buscarPedidoPorId(pedidoId);
@@ -178,7 +184,16 @@ public class PedidoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item não pertence a este pedido.");
         }
 
+        // Bug A fix: devolver estoque ao remover item
+        Produto produto = itemToRemove.getProduto();
+        produto.setQuantidade(produto.getQuantidade() + itemToRemove.getQuantidade());
+        produtoRepository.save(produto);
+
         pedido.removeItem(itemToRemove);
         return pedidoRepository.save(pedido);
+    }
+
+    public List<Pedido> listarPedidosPorUsuario(UUID usuarioId) {
+        return pedidoRepository.findByClienteIdOrVendedorId(usuarioId, usuarioId);
     }
 }

@@ -2,6 +2,7 @@ package com.bazar.bazar.model;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class Usuario {
     private UUID id;
     private String nome;
     private String email;
+    @JsonIgnore
     private String senha;
     private String foto;
     private String telefone;

@@ -10,8 +10,9 @@ import com.bazar.bazar.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,53 +29,58 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
-    // Endpoint para criar um novo pedido
-    // POST http://localhost:8081/api/pedidos
     @PostMapping
-    public ResponseEntity<PedidoResponse> criarPedido(@RequestBody PedidoRequest pedidoRequest) {
-
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+    public ResponseEntity<PedidoResponse> criarPedido(@RequestBody PedidoRequest pedidoRequest,
+                                                       @AuthenticationPrincipal Usuario usuarioLogado) {
         Pedido novoPedido = pedidoService.criarPedido(pedidoRequest, usuarioLogado);
-
         return new ResponseEntity<>(new PedidoResponse(novoPedido), HttpStatus.CREATED);
     }
 
-    // Endpoint para buscar um pedido pelo ID
     // GET http://localhost:8081/api/pedidos/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<PedidoResponse> buscarPedidoPorId(@PathVariable UUID id) {
-        
+    public ResponseEntity<PedidoResponse> buscarPedidoPorId(@PathVariable UUID id,
+                                                             @AuthenticationPrincipal Usuario usuarioLogado) {
         Pedido pedido = pedidoService.buscarPedidoPorId(id);
-        // Se o pedido não for encontrado, o service já lança a exceção 404.
+        // Bug E fix: apenas cliente ou vendedor do pedido pode visualizá-lo
+        boolean isOwner = pedido.getCliente().getId().equals(usuarioLogado.getId())
+                || pedido.getVendedor().getId().equals(usuarioLogado.getId());
+        if (!isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
         return new ResponseEntity<>(new PedidoResponse(pedido), HttpStatus.OK);
     }
 
-    // Endpoint para buscar todos os pedidos
     // GET http://localhost:8081/api/pedidos
     @GetMapping
-    public ResponseEntity<List<PedidoResponse>> listarTodosPedidos() {
-        List<PedidoResponse> pedidos = pedidoService.listarTodosPedidos().stream()
+    public ResponseEntity<List<PedidoResponse>> listarTodosPedidos(@AuthenticationPrincipal Usuario usuarioLogado) {
+        // Bug D fix: retorna apenas pedidos do usuário logado (como cliente ou vendedor)
+        List<PedidoResponse> pedidos = pedidoService.listarPedidosPorUsuario(usuarioLogado.getId()).stream()
                 .map(PedidoResponse::new)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(pedidos, HttpStatus.OK);
     }
 
-    // Endpoint para atualizar um pedido existente
-    // PUT http://localhost:8081/api/pedidos/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<PedidoResponse> atualizarPedido(@PathVariable UUID id, @RequestBody PedidoRequest pedidoRequest) {
-        Pedido pedidoAtualizado = pedidoService.atualizarPedido(id, pedidoRequest);
-        // O service lida com os erros, o controller apenas retorna a resposta de sucesso.
-        return new ResponseEntity<>(new PedidoResponse(pedidoAtualizado), HttpStatus.OK);
+    public ResponseEntity<PedidoResponse> atualizarPedido(@PathVariable UUID id,
+                                                           @RequestBody PedidoRequest pedidoRequest,
+                                                           @AuthenticationPrincipal Usuario usuarioLogado) {
+        Pedido existente = pedidoService.buscarPedidoPorId(id);
+        boolean isOwner = existente.getCliente().getId().equals(usuarioLogado.getId())
+                || existente.getVendedor().getId().equals(usuarioLogado.getId());
+        if (!isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
+        return new ResponseEntity<>(new PedidoResponse(pedidoService.atualizarPedido(id, pedidoRequest)), HttpStatus.OK);
     }
 
-    // Endpoint para deletar um pedido
-    // DELETE http://localhost:8081/api/pedidos/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPedido(@PathVariable UUID id) {
+    public ResponseEntity<Void> deletarPedido(@PathVariable UUID id,
+                                               @AuthenticationPrincipal Usuario usuarioLogado) {
+        Pedido existente = pedidoService.buscarPedidoPorId(id);
+        if (!existente.getCliente().getId().equals(usuarioLogado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas o comprador pode cancelar o pedido.");
+        }
         pedidoService.deletarPedido(id);
-        // O service lida com os erros, o controller apenas retorna a resposta de sucesso.
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

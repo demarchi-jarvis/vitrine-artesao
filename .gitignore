@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secrets — NUNCA commitar
+.env
+*.env.local
+
+### Logs
+*.log
+logs/

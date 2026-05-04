@@ -1,6 +1,5 @@
 package com.bazar.bazar.response;
 
-import com.bazar.bazar.model.ItemPedido;
 import com.bazar.bazar.model.Pedido;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,17 +14,25 @@ import java.util.stream.Collectors;
 public class PedidoResponse {
     private UUID id;
     private UUID clienteId;
-    private String clienteNome; // Adiciona nome do cliente para melhor visualização
-    private LocalDateTime dataCriacao;
+    private String clienteNome;
+    private UUID vendedorId;
+    private String vendedorNome;
+    private UUID enderecoEntregaId;
     private Boolean remote;
-    private List<ItemPedidoResponse> itens; // DTO para os itens do pedido
+    private LocalDateTime dataCriacao;
+    private LocalDateTime dataEntrega;
+    private List<ItemPedidoResponse> itens;
 
     public PedidoResponse(Pedido pedido) {
         this.id = pedido.getId();
         this.clienteId = pedido.getCliente().getId();
         this.clienteNome = pedido.getCliente().getNome();
-        this.dataCriacao = pedido.getDataCriacao();
+        this.vendedorId = pedido.getVendedor().getId();
+        this.vendedorNome = pedido.getVendedor().getNome();
+        this.enderecoEntregaId = pedido.getEnderecoEntrega().getId();
         this.remote = pedido.getRemote();
+        this.dataCriacao = pedido.getDataCriacao();
+        this.dataEntrega = pedido.getDataEntrega();
         this.itens = pedido.getItens().stream()
                 .map(ItemPedidoResponse::new)
                 .collect(Collectors.toList());

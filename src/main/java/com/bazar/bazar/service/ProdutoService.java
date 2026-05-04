@@ -5,13 +5,11 @@ import com.bazar.bazar.model.Produto;
 import com.bazar.bazar.model.Usuario;
 import com.bazar.bazar.repositories.ProdutoRepository;
 import com.bazar.bazar.repositories.UsuarioRepository;
-import jakarta.persistence.Column;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -47,10 +45,8 @@ public class ProdutoService {
      public Page<Produto> getAllProdutos(Pageable pageable) {
         return produtoRepository.findAll(pageable);
     }
-    public List<Produto> getMeusProdutos() {
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        return produtoRepository.findByAutorId(usuarioLogado.getId());
+    public List<Produto> getMeusProdutos(UUID autorId) {
+        return produtoRepository.findByAutorId(autorId);
     }
     public List<Produto> buscarProdutosUsuario(String email) {
         Usuario usuarioLoja = usuarioRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado com email: " + email)); 
